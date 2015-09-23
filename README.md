@@ -2,7 +2,7 @@
 # CS 182: Artificial Intelligence
 # Assignment 2: Adverserial Search
 * Fall 2015
-* Due: September 30, 5pm
+* Due: October 2, 5pm
 
 
 ![Ghost](http://vignette2.wikia.nocookie.net/pacman/images/c/c3/Pac-man_ghosts_blinky_inky.jpg/revision/latest?cb=20110314180633)
@@ -15,7 +15,7 @@ Note: We will use the Pacman framework developed at Berkeley. This framework is 
 
 ## Computational Assignment:
 
-1. Follow the instructions at: 
+Follow the instructions at: 
 
 http://ai.berkeley.edu/multiagent.html
 
@@ -27,9 +27,14 @@ We recommend cloning the assignment by running:
 > git clone https://github.com/CS182/HW2.git
 
 
-2. Note: alpha-beta is an extension of MiniMax. Therefore, if you divide the work you probably don’t want to assign Minimax to one student and alpha-beta to the other. Implementing alpha-beta without first implementing Minimax will be very challenging.
+Submit your project to the course dropbox folder. 
 
-3. Submit your project to the course dropbox folder. 
+### Notes
+
+1. Alpha-beta is an extension of MiniMax. Therefore, if you divide the work you probably don’t want to assign Minimax to one student and alpha-beta to the other. Implementing alpha-beta without first implementing Minimax will be very challenging.
+
+2. The assignment uses the term "depth" to mean one pacman move *and* all the ghosts move (also known as a "ply"). This differs from the notes, so be sure to take this into account when implementing. 
+
 
 ## Written Assignment
 
