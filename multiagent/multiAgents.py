@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -65,35 +65,52 @@ class ReflexAgent(Agent):
 
         Print out these variables to see what you're getting, then combine them
         to create a masterful evaluation function.
+
+        Evaluation Function:
+          The value of a state depends on two variables. The minimum manhattanDistance
+          to the closest food item, and the number of food items.
+
+          For the same number of food items, a lower distance is better.
+          Lower number of food items is always better than more food items.
+
+          To combine these two metrics so the above holds, we think of the
+          returned value as a decimal with (food_score).(distance_score).
+
+          Therefore, we first bound the distance_score into the interval [0,1)
+          using the bounded metric 1/(1 + d). Note that larger x imply a lower
+          score, which is what we want.
+
+          The food items are already guaranteed to be integers, so we can simply
+          take their count and negate it, as -d. This gives use a value in the
+          set of natural numbers, and additionally, more food implies a lower score.
+
+          However, we also consider a few edge cases. We never want to die, some
+          given our position, any position that puts us in the vicinity of a ghost
+          is a position we wish to avoid. Given that the grid is open and that there
+          is only one ghost, we can guarantee survival by staying at least two
+          steps away from non-scared ghost.
         """
+        def ghostBuffer(ghost):
+          x,y = ghost.getPosition()
+          return [(x - 1, y), (x, y - 1), (x + 1, y), (x , y + 1), (x , y)]
+
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        "*** YOUR CODE HERE ***"
 
-        def manhattanDistance(pos1, pos2):
-          return abs(pos2[0] - pos1[0]) + abs(pos2[1] - pos1[1])
+        dists = [util.manhattanDistance(newPos, food) for food in newFood.asList()]
+        enemyGhosts = [ghost for ghost in newGhostStates if ghost.scaredTimer == 0]
+        deathPos = [pos for pos in ghostBuffer(ghost) for ghost in enemyGhosts]
+        minDist = min(dists) if dists else 0
 
-        manhattanDistances = [manhattanDistance(newPos, food) for food in newFood.asList()]
-
-        def ghostBuffer(pos):
-          x,y = pos
-          return [(x - 1, y), (x, y - 1), (x + 1, y), (x , y + 1), (x , y)]
-          
-        taboo_states = []
-        for ghost in newGhostStates:
-          taboo_states += ghostBuffer(ghost.getPosition())
-        
-        if newPos in taboo_states:#[ghost.getPosition() for ghost in newGhostStates]:
+        # Try to never die.
+        if newPos in deathPos:
           return -float("Inf")
-        if newFood.asList():
-          return 10.0/min(manhattanDistances) - len(newFood.asList())*50
+        # A slightly complicated evaluation function.
         else:
-          return float("Inf")
-        return successorGameState.getScore()
+          return 1.0 / (1 + minDist) - len(newFood.asList())
 
 def scoreEvaluationFunction(currentGameState):
     """
