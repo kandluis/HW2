@@ -142,11 +142,24 @@ class MultiAgentSearchAgent(Agent):
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
+    def terminal(self, state):
+        """
+        Returns true if the state is a terminal state. We define a state to be
+        terminal if the default agent has no legal moves.
+        """
+        return state.getLegalActions() == []
+
+    def isMaxAgent(self, agent):
+        """
+        Returns true if the agent is the max agent. The assumption is that agent
+        0 is the only max agent.
+        """
+        return agent == 0
+
 class MinimaxAgent(MultiAgentSearchAgent):
     """
       Your minimax agent (question 2)
     """
-
     def getAction(self, gameState):
         """
           Returns the minimax action from the current gameState using self.depth
@@ -165,25 +178,21 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         nagents = gameState.getNumAgents()
-        def terminal(state):
-            """
-            Returns true if the state is terminal.
-            """
-            return state.getLegalActions() == []
+        def goalFunction(agentFun, actionList):
+            return agentFun(actionList, key=lambda (action, score): score)
 
-        def isPacMan(agent):
-            return agent % nagents == 0
-
-        def miniMax(state, agent):
-            if terminal(state) or int(agent / nagents) >= self.depth:
+        def miniMax(state, depth):
+            # We assume that there exists only one max agent, and a single ply
+            # consists of a turn by max and all opponents.
+            agentIndex = depth % nagents
+            if self.terminal(state) or int(depth / nagents) >= self.depth:
                 return (None, self.evaluationFunction(state))
 
             # Acquire the value of successor states and their actions.
-            agentCost = [(action, miniMax(state.generateSuccessor(agent % nagents, action), agent + 1)[1]) for action in  state.getLegalActions(agent % nagents)]
-            agentFun = max if isPacMan(agent) else min
-            goal = lambda lst: agentFun(lst, key=lambda (action, score): score)
+            agentActionCost = [(action, miniMax(state.generateSuccessor(agentIndex, action), depth + 1)[1]) for action in state.getLegalActions(agentIndex)]
+            agentFun = max if self.isMaxAgent(agentIndex) else min
 
-            return goal(agentCost)
+            return goalFunction(agentFun, agentActionCost)
 
         return miniMax(gameState, 0)[0]
 
@@ -212,25 +221,17 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         nagents = gameState.getNumAgents()
-        def terminal(state):
-            """
-            Returns true if the state is terminal.
-            """
-            return state.getLegalActions() == []
-
-        def isPacMan(agent):
-            return agent % nagents == 0
-
-        def expectiMax(state, agent):
-            if terminal(state) or int(agent / nagents) >= self.depth:
+        def expectiMax(state, depth):
+            agentIndex = depth % nagents
+            if self.terminal(state) or int(depth / nagents) >= self.depth:
                 return (None, self.evaluationFunction(state))
 
-            agentCost = [(action, expectiMax(state.generateSuccessor(agent % nagents, action), agent + 1)[1]) for action in  state.getLegalActions(agent % nagents)]
+            agentActionCost = [(action, expectiMax(state.generateSuccessor(agentIndex, action), depth + 1)[1]) for action in state.getLegalActions(agentIndex)]
 
-            if isPacMan(agent):
-                return max(agentCost, key=lambda (action, score): score)
+            if self.isMaxAgent(agentIndex):
+                return max(agentActionCost, key=lambda (action, score): score)
             else:  # We have a ghost, so chance node.
-                return (None, float(sum([score for (_,score) in agentCost])) / float(len(agentCost)))
+                return (None, float(sum([score for (_, score) in agentActionCost])) / float(len(agentActionCost)))
 
         return expectiMax(gameState, 0)[0]
 
