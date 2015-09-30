@@ -164,8 +164,26 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        nagents = gameState.getNumAgents()
+        def terminal(state):
+            """
+            Returns true if the state is terminal.
+            """
+            return state.getLegalActions() == []
+
+        def isPacMan(agent):
+            return agent % nagents == 0
+
+        def miniMax(state, agent):
+            if terminal(state) or int(agent / nagents) == self.depth:
+                return self.evaluation(state)
+
+            # Acquire the value of successor states and their actions.
+            agentStates = [(action, miniMax(state.getSuccessor(agent, action), agent + 1)) for action in  state.getLegalActions(agent % nagents)]
+            f = max if isPacman(agent) else min
+            goal = lambda lst: f(lst, key=lambda (a,s): s)
+
+            return goal(agentStates)[0]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
