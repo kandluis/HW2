@@ -211,8 +211,28 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        nagents = gameState.getNumAgents()
+        def terminal(state):
+            """
+            Returns true if the state is terminal.
+            """
+            return state.getLegalActions() == []
+
+        def isPacMan(agent):
+            return agent % nagents == 0
+
+        def expectiMax(state, agent):
+            if terminal(state) or int(agent / nagents) >= self.depth:
+                return (None, self.evaluationFunction(state))
+
+            agentCost = [(action, expectiMax(state.generateSuccessor(agent % nagents, action), agent + 1)[1]) for action in  state.getLegalActions(agent % nagents)]
+
+            if isPacMan(agent):
+                return max(agentCost, key=lambda (action, score): score)
+            else:  # We have a ghost, so chance node.
+                return (None, float(sum([score for (_,score) in agentCost])) / float(len(agentCost)))
+
+        return expectiMax(gameState, 0)[0]
 
 def betterEvaluationFunction(currentGameState):
     """
