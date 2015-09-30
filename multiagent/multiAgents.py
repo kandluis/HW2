@@ -176,14 +176,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         def miniMax(state, agent):
             if terminal(state) or int(agent / nagents) == self.depth:
-                return self.evaluation(state)
+                return self.evaluationFunction(state)
 
             # Acquire the value of successor states and their actions.
-            agentStates = [(action, miniMax(state.getSuccessor(agent, action), agent + 1)) for action in  state.getLegalActions(agent % nagents)]
-            f = max if isPacman(agent) else min
+            agentStates = [(action, miniMax(state.generateSuccessor(agent % nagents, action), agent + 1)) for action in  state.getLegalActions(agent % nagents)]
+            f = max if isPacMan(agent) else min
             goal = lambda lst: f(lst, key=lambda (a,s): s)
 
             return goal(agentStates)[0]
+
+        return miniMax(gameState, 0)
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
