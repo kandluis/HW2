@@ -205,20 +205,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
         nagents = gameState.getNumAgents()
-        def terminal(state):
-          return state.getLegalActions() == []
-
-        def isPacMan(agent):
-            return agent % nagents == 0
-
         def abMiniMax(state, depth, alpha, beta):
             agentIndex = depth % nagents
-            if terminal(state) or int(depth / nagents) >= self.depth:
+            if self.terminal(state) or int(depth / nagents) >= self.depth:
                 return (None, self.evaluationFunction(state))
 
-            if isPacMan(agentIndex):
+            if self.isMaxAgent(agentIndex):
                 #max's turn!
                 value = -float("Inf")
                 best_action = None
