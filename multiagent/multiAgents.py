@@ -287,14 +287,20 @@ def betterEvaluationFunction(currentGameState):
 
     # Get ghost positions.
     newGhostStates = currentGameState.getGhostStates()
-    enemyGhosts = [searchAgents.mazeDistance(pos, ghost.getPosition(), currentGameState) for ghost in newGhostStates]
+    enemyGhosts = [util.manhattanDistance(pos, ghost.getPosition()) for ghost in newGhostStates]
+
+    #enemyGhosts = [searchAgents.mazeDistance(pos, ghost.getPosition(), currentGameState) for ghost in newGhostStates]
     minGhost = min(enemyGhosts)
 
     deathPos = [pos for ghost in newGhostStates for pos in ghostBuffer(ghost)]
     #if pos in deathPos:
     #return -float("Inf")
     #else:
-    return -minDist*2 + minGhost - len(foodPos)*10
+    if minGhost == 0:
+      return -float("Inf")
+    #  return 1.0 / (1 + minDist) - len(foodPos)
+
+    return -minDist*10 + 40*(minGhost** -4) - len(foodPos)*500
 
 # Abbreviation
 better = betterEvaluationFunction
