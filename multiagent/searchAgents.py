@@ -585,8 +585,8 @@ def mazeDistance(point1, point2, gameState):
 
     This might be a useful helper function for your ApproximateSearchAgent.
     """
-    x1, y1 = point1
-    x2, y2 = point2
+    x1, y1 = map(int, point1)
+    x2, y2 = map(int, point2)
     walls = gameState.getWalls()
     assert not walls[x1][y1], 'point1 is a wall: ' + point1
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)

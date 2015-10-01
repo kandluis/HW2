@@ -14,7 +14,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, util
+import random, search, searchAgents, util
 
 from game import Agent
 
@@ -102,7 +102,7 @@ class ReflexAgent(Agent):
 
         dists = [util.manhattanDistance(newPos, food) for food in newFood.asList()]
         enemyGhosts = [ghost for ghost in newGhostStates if ghost.scaredTimer == 0]
-        deathPos = [pos for pos in ghostBuffer(ghost) for ghost in enemyGhosts]
+        deathPos = [pos for ghost in enemyGhosts for pos in ghostBuffer(ghost)]
         minDist = min(dists) if dists else 0
 
         # Try to never die.
@@ -275,6 +275,10 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
+    def ghostBuffer(ghost):
+        x,y = ghost.getPosition()
+        return [(x - 1, y), (x, y - 1), (x + 1, y), (x , y + 1), (x , y)]
+
     # Get minimum distance to nearest food
     pos = currentGameState.getPacmanPosition()
     foodPos = currentGameState.getFood().asList()
@@ -283,10 +287,14 @@ def betterEvaluationFunction(currentGameState):
 
     # Get ghost positions.
     newGhostStates = currentGameState.getGhostStates()
-    enemyGhosts = [util.manhattanDistance(pos,ghost.getPosition()) for ghost in newGhostStates if ghost.scaredTimer == 0]
+    enemyGhosts = [searchAgents.mazeDistance(pos, ghost.getPosition(), currentGameState) for ghost in newGhostStates]
     minGhost = min(enemyGhosts)
 
-    return -minDist + minGhost - len(foodPos)
+    deathPos = [pos for ghost in newGhostStates for pos in ghostBuffer(ghost)]
+    #if pos in deathPos:
+    #return -float("Inf")
+    #else:
+    return -minDist*2 + minGhost - len(foodPos)*10
 
 # Abbreviation
 better = betterEvaluationFunction
