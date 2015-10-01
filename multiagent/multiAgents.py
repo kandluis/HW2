@@ -91,8 +91,8 @@ class ReflexAgent(Agent):
           steps away from non-scared ghost.
         """
         def ghostBuffer(ghost):
-          x,y = ghost.getPosition()
-          return [(x - 1, y), (x, y - 1), (x + 1, y), (x , y + 1), (x , y)]
+            x, y = ghost.getPosition()
+            return [(x - 1, y), (x, y - 1), (x + 1, y), (x, y + 1), (x, y)]
 
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
@@ -107,10 +107,10 @@ class ReflexAgent(Agent):
 
         # Try to never die.
         if newPos in deathPos:
-          return -float("Inf")
+            return -float("Inf")
         # A slightly complicated evaluation function.
         else:
-          return 1.0 / (1 + minDist) - len(newFood.asList())
+            return (1 + minDist)**(-1) - len(newFood.asList())
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -138,7 +138,7 @@ class MultiAgentSearchAgent(Agent):
     """
 
     def __init__(self, evalFn = 'scoreEvaluationFunction', depth = '2'):
-        self.index = 0 # Pacman is always agent index 0
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
@@ -179,6 +179,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         nagents = gameState.getNumAgents()
         def goalFunction(agentFun, actionList):
+            """
+            Takes as input a list of (action, score) tuples and returns the best
+            action as defined by agentFun.
+            """
             return agentFun(actionList, key=lambda (action, score): score)
 
         def miniMax(state, depth):
@@ -207,12 +211,15 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         nagents = gameState.getNumAgents()
         def abMiniMax(state, depth, alpha, beta):
+            """
+            Implementation of MiniMax with alpha-beta pruning
+            """
             agentIndex = depth % nagents
             if self.terminal(state) or int(depth / nagents) >= self.depth:
                 return (None, self.evaluationFunction(state))
 
             if self.isMaxAgent(agentIndex):
-                #max's turn!
+                # Max's turn!
                 value = -float("Inf")
                 best_action = None
                 for action in state.getLegalActions(agentIndex):
@@ -255,6 +262,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         nagents = gameState.getNumAgents()
         def expectiMax(state, depth):
+            """
+            Implementation of the ExpectiMax search algorithm.
+            The min player is taken to be a chance node.
+            """
             agentIndex = depth % nagents
             if self.terminal(state) or int(depth / nagents) >= self.depth:
                 return (None, self.evaluationFunction(state))
@@ -273,12 +284,31 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    def ghostBuffer(ghost):
-        x,y = ghost.getPosition()
-        return [(x - 1, y), (x, y - 1), (x + 1, y), (x , y + 1), (x , y)]
+      DESCRIPTION:
+        The evaluation function is similar to that used for q1.
 
+        We have a few criteria for evaluating a state. The minimum
+        manhattanDistance to the nearest non-scared ghost, the score of the
+        game, and number of food items left on the board.
+
+        If the minimum distance to the nearest non-scared ghost is 0, we
+        return -infinity. This is to make sure that death is always penalized
+        more heavily than anything else. One drawback of this approach is that
+        death states become indistinguishable. However, it does guarantee we
+        never select a path to a death state if one exists.
+
+        Next, we calculated a heuristic for the expected score of the game.
+        States with higher expected scores are favored. We do this by taking the
+        current score and subtracting the number of food items left to acquire.
+        This is a simple heuristic for what our game score will be.
+
+        Lastly, we combine the above with the bounded metric on the nearest
+        food items. Similar to q1, this implies that lower score states are
+        favored, and out of those with the same expected score, states with a
+        closer food item are favored.
+
+        On the given tests, we achieve an average score of 1086.1.
+    """
     # Get minimum distance to nearest food
     pos = currentGameState.getPacmanPosition()
     foodPos = currentGameState.getFood().asList()
@@ -287,14 +317,15 @@ def betterEvaluationFunction(currentGameState):
 
     # Get ghost positions.
     newGhostStates = currentGameState.getGhostStates()
-    enemyGhosts = [util.manhattanDistance(pos, ghost.getPosition()) for ghost in newGhostStates]
+    enemyGhosts = [util.manhattanDistance(pos, ghost.getPosition()) for ghost in newGhostStates if ghost.scaredTimer == 0]
 
-    #enemyGhosts = [searchAgents.mazeDistance(pos, ghost.getPosition(), currentGameState) for ghost in newGhostStates]
-    minGhost = min(enemyGhosts) if enemyGhosts else 0
+    minGhost = min(enemyGhosts) if enemyGhosts else float("Inf")
+    # Avoid deaths at all cost.
     if minGhost == 0:
-      return -float("Inf")
+        return -float("Inf")
 
-    return 10*((1+minDist)**-1) + 40*(minGhost** -2) - len(foodPos)*500
+    score = currentGameState.getScore()
+    return (score - len(foodPos)) + ((1+minDist)**(-1))
 
 # Abbreviation
 better = betterEvaluationFunction
