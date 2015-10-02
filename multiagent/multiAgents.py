@@ -1,4 +1,8 @@
 # multiAgents.py
+#
+# Authors:
+# @Kevin Eskici (keskici@college.harvard.edu)
+# @Luis A. Perez (luisperez@college.harvard.edu)
 # --------------
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
@@ -14,7 +18,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, search, searchAgents, util
+import random, util
 
 from game import Agent
 
