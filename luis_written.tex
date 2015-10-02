@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage{fancyhdr}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[pdftex]{graphicx}
+\usepackage[margin=1in]{geometry}
+
+
+% Create answer counter to keep track of seperate responses
+\newcounter{AnswerCounter}
+\newcounter{SubAnswerCounter}
+\setcounter{AnswerCounter}{1}
+\setcounter{SubAnswerCounter}{1}
+
+% Create answer environment which uses counter
+\newenvironment{answer}[0]{
+  \setcounter{SubAnswerCounter}{1}
+  \bigskip
+  \textbf{Solution \arabic{AnswerCounter}}
+  \\
+  \begin{small}
+}{
+  \end{small}
+  \stepcounter{AnswerCounter}
+}
+
+\newenvironment{subanswer}[0]{
+  (\alph{SubAnswerCounter})
+}{
+ \bigskip
+  \stepcounter{SubAnswerCounter}
+}
+
+% Custom Header information on each page
+\pagestyle{fancy}
+\lhead{HUID: 70871564}
+\rhead{CS182: Luis APerez}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\footrulewidth}{0.1pt}
+
+% Title page is page 0
+\setcounter{page}{0}
+
+\begin{document}
+\begin{answer}
+We compare the performance of our alpha-beta agent when it plays against a directional ghost and a random ghost (See Table \ref{tab:ghosts}). First, note that the result for each game will be the same as minimax (this is because alpha-beta is simply a heuristic improvement on minimax intended to save computation time). We ran each game $n=10$ times and took the average of the results.
+
+The reason $n$ is relatively small is due to the time it takes to run these trials. Even having a good algorithm still takes time because PacMan can sometimes loop for a long time (especially with random ghosts). In order to help mitigate this issue, the table is laid out so as to provide three crucial pieces of information $(\bar{x}, \sigma, p)$ where $\bar{x}$ is the measured mean, $\sigma$ is the standard deviation, and $p$ is the probability of winning given the data.
+
+\begin{table}[]
+\centering
+\caption{Measuring DirectionalGhost vs RandomGhost Performance}
+\label{tab:ghosts}
+\begin{tabular}{|l|l|l|}
+\hline
+                     & DirectionalGhost       & RandomGhost           \\ \hline
+testClassic (d=3)    & 554.8, 4.92, 100\%     & (531.6, 18.99, 100\%) \\ \hline
+smallClassic (d=3)   & (419, 840.47, 30\%)    & (372.9, 800.26, 40\%) \\ \hline
+minimaxClassic (d=4) & (-391.5, 318.86, 10\%) & (211.6, 487.6, 70\%)  \\ \hline
+trappedClassic (d=3) & (-501, 0, 0\%)         & (-501, 0, 0\%)        \\ \hline
+\end{tabular}
+\end{table}
+
+
+To summarize the data, first we note that the variance in the time it takes to solve a game with a RandomGhost agent is much higher than that for a Directional Agent. I don't believe this has anything to do with the algorithm itself, rather simply it takes longer to solve a game which lasts longer. There are times when the random ghosts will ``trap'' PacMan in an area of the board for a while.
+
+Next, we know that overall, there appears to be little difference between the DirectionalGhost and the RandomGhost. This makes sense for testClassic, as it's a small board where PacMan can easily win. For smallClassic, it's a little more difficult to tease out the results due to the high variance (PacMan wins/loses sometimes, and the score difference in each scenario is high). However, according to the above, DirectionalGhost is worse than RandomGhost. Looking at the board, this is explicable by the fact that there aren't many paths through which PacMan can move. So a RandomGhost or a DirectionalGhost will approach PacMan in a similar fashion. In minimaxClassic, we have three ghosts attacking PacMan. Here, the benefit of the DirectionalGhost is more clear cut. When the ghosts move randomly, PacMan can eat them more easily and therefore win. When they move away from PacMan when scared, its harder for PacMan to catch them. Similarly, moving randomly gives PacMan more opportunity to eat a food pellet, while in the DiectionalGhost case, the ghost would approach PacMan directly and decrease his opportunities of movement.
+
+For trappedClassic, the results are equivalent for both. No matter how the ghosts move, PacMan is trapped and will always loose. However, it is interesting to note that there's no variance within the RandomGhost, as we would have expected at least some variation in the method used to defeat PacMan.
+
+\end{answer}
+
+\begin{answer}
+A ghost agent that plays with people would be designed very differently than one that plays with computers. For one, we know that people can't calculate that many moves ahead in time, so I'd design an agent that plays minimax (or some variant), but whose end states are simply states not where PacMan has died, but where PacMan has been essentially trapped in one corder/subset of the entire grid by the ghost(s). With this approach, people would have difficulty forseeing their demise.
+
+Building off the above idea, I think creating ghosts that are initially relatively ``friendly'' but become progressively more aggressive towards PacMan would be beneficial. While a computer would adapt optimally, a human might underestimate the capability of the ghosts from the beginning, and once such a working model has been established, it would be difficult to remove (thereby giving an advantage to the ghosts).
+
+Another approach would be to diverge from completely random or completely directional (too predictable), into a strategy by the ghosts which promotes cooperation by the ghosts. The ghosts would work together to block off different sections of the grid, with a focus on the power-ups (while still allowing for enough space for PacMan to have a ``chance'' at getting the power-ups). In this scenario, we would attempt to take advantage of human psychology. The power-ups are, due to the larger size, inherently more attractive in a game of PacMan, therefore it makes sense people would want to target them. We can therefore focus our efforts on creating ghosts which are excellent at trapping PacMan near power-pellets.
+
+However, as soon as PacMan eats the pellet the ghosts would become scared. IN this scenario, we might take advantage of yet another psychological hack. The scared ghosts are, intuitively, an attractive target for PacMan (despite their limited scared timer), and I would venture to guess that most humans would persue one or two ghosts as soon as they've become scared. The ghosts, however, should be smart enough to ``lure'' PacMan into an unsafe situation (made safe only because the ghosts are scared), but which will quickly become unsafe.
+\end{answer}
+
+\begin{answer}
+Note that here we're referring to the tree provided to us in the notes.
+
+\begin{subanswer}
+The nodes $C$ and $D$ are pruned when both $A$ and $B$ have values $\geq 6$ (or $> 6$ if using strict inequality for pruning as we did in this pset). The reason for this is that the left subtree has value $6$, and at the root we're taking the minimum, therefore we know that values $\geq 6$ won't ever be taken. More formally, by the time we get to the right subtree we have $(\alpha, \beta) = (-\infty, 6)$. Then the right $\to$ left subtree has value $v = \min \{A,B\}$, and because the right subtree is a max, this updated the $\alpha$ value to $(\min\{A,B\}, 6)$. If we're using strict inequality, we prune when $\alpha > \beta \implies \min\{A,B\} > 6 \implies A > 6$ and $B > 6$. Otherwise, if we prune when equal, we have $A \geq 6, B \geq 6$.
+\end{subanswer}
+
+\begin{subanswer}
+Yes, the AlphaBeta had to expand the value with node $6$ (if we process nodes in the order specified). This is because after we calculate $\min\{9,2\}$, the left subtree has $(\alpha,\beta) = (2,\infty)$. This is passed down to the parent of leaf nodes $7,6$, and the $7$ updates the $\beta$ so that we now have $(2,7)$. However, we cannot yet prune since we're taking the minimum and the next value (in this case $6$) might be lower. Therefore, we must expand the $6$ node.
+\end{subanswer}
+\end{answer}
+\end{document}
